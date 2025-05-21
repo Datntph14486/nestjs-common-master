@@ -1,0 +1,28 @@
+@startuml create_terms
+
+skinparam sequenceMessageAlign right
+skinparam maxMessageSize 255
+
+title
+Tạo điều khoản
+end title
+
+autonumber "<b>[000]"
+
+participant web
+participant kbsv_terms as kt
+
+web -> kt
+kt -> kt
+note right
+    - Tạo <b>terms
+    + set <b>terms.version=1
+    + set <b>terms.state=EDITING
+    + set <b>terms.maintaining=true
+    - Tạo <b>termsSelect
+    + set <b>termsSelect.termsId=terms.id
+    + set <b>termsSelect.termsVersion=terms.version
+end note
+kt --> web
+
+@enduml

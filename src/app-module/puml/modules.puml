@@ -1,0 +1,106 @@
+@startuml modules
+title NestJS's module definition
+
+class MainModule #orange
+note top
+code logic nghiệp vụ
+end note
+
+class AppModule #green
+note top
+mặc định khai báo
+end note
+
+class CommonModule #green
+note top
+- thư viện dùng chung
+- rest-template, jdbc-template, base-crud, convert,...
+end note
+
+class AdminModule #green
+note bottom
+user, role, category, requestmap...
+end note
+
+class IntegrationHistModule #green
+note bottom
+ghi log call api bằng resttemplate
+end note
+
+class LDAPModule #green
+note bottom
+tích hợp ldap
+end note
+
+class LoggerModule #green
+note bottom
+ghi log ra file, console, elk
+end note
+
+class OpenAPIModule #green
+note bottom
+xác thực bằng token của OpenAPI
+end note
+
+class SSOModule #green
+note bottom
+xác thực sso tích hợp keycloak
+end note
+
+class WSModule #green
+note bottom
+tích hợp websocket
+end note
+
+class WSRedisModule #green
+note bottom
+redis adapter cho websocket
+end note
+
+class EmailModule #orange
+note bottom
+gửi email
+end note
+
+' MainModule
+AppModule *-- MainModule
+
+' CommonModule
+AppModule *-- CommonModule
+
+' AdminModule
+AppModule *-- AdminModule
+CommonModule <|-- AdminModule
+
+' IntegrationHistModule
+AppModule *-- IntegrationHistModule
+CommonModule <|-- IntegrationHistModule
+
+' LDAPModule
+AppModule *-- LDAPModule
+AdminModule <|-- LDAPModule
+
+' LoggerModule
+AppModule *-- LoggerModule
+
+' OpenAPIModule
+AppModule *-- OpenAPIModule
+CommonModule <|-- OpenAPIModule
+
+' SSOModule
+AppModule *-- SSOModule
+CommonModule <|-- SSOModule
+
+' WSModule
+AppModule *-- WSModule
+CommonModule <|-- WSModule
+
+' RedisWSModule
+AppModule *-- WSRedisModule
+WSModule <|-- WSRedisModule
+
+' EmailModule
+AppModule *-- EmailModule
+CommonModule <|-- EmailModule
+
+@enduml

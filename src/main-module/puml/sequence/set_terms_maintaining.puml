@@ -1,0 +1,37 @@
+@startuml update_terms
+
+skinparam sequenceMessageAlign right
+skinparam maxMessageSize 255
+skinparam noteTextAlignment left
+
+title
+Chuyển điều khoản sang trạng thái maintaining
+end title
+
+autonumber "<b>[000]"
+
+participant web
+participant kbsv_terms as kt
+
+web -> kt
+kt -> kt
+note right
+    - Kiểm tra dữ liệu
+end note
+alt #LightBlue successful case 1
+    kt -> kt
+    kt --> web
+    note right
+        - generalResponse.code = <b>0</b>
+    end note
+else #Orange failure case 1: Điều khoản đang được chỉnh sửa bởi user khác
+    kt --> web
+    note right
+        - Trả đối tượng generalResponse
+        + generalResponse.code = <b>-1</b>
+        + generalResponse.errorCode = <font color=red><b>???
+        + generalResponse.message = Điều khoản đang được chỉnh sửa bởi user khác
+    end note
+end
+
+@enduml

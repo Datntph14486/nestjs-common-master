@@ -1,0 +1,101 @@
+@startuml mba_get_approved_terms
+
+skinparam sequenceMessageAlign right
+skinparam maxMessageSize 255
+
+title
+Khách hàng sử dụng dịch vụ
+end title
+
+autonumber "<b>[000]"
+
+actor customer as c
+participant mobile as m
+participant kbsv_contract as kc
+
+c -> m
+note right
+    Khách vào chức năng trong app
+end note
+m -> kc: /mba/api/v1/terms/find
+note right
+    Kiểm tra xem khách hàng đã chấp thuận điều khoản chưa?
+end note
+kc -> kc
+note right
+    - Kiểm tra trong <b>TermsCust</b> để xác định khách hàng đã chấp thuận chưa
+    - Lấy thông tin điều khoản mới nhất đã được phê duyệt
+    + Lấy trong <b>Terms</b> nếu <b>state=APPROVED
+    + Lấy bản ghi sau cùng trong <b>TermsHist</b> có <b>state=APPROVED</b> 
+    nếu <b>terms.state!=APPROVED
+    - Trường hợp không tìm được điều khoản, trả <b>failure case 1.3
+end note
+
+alt #LightBlue success case 1.1: Khách hàng đã chấp thuận, điều khoản chưa thay đổi
+    kc --> m
+    note right
+        - Trả đối tượng generalResponse
+        + generalResponse.code = <b>0</b>
+    end note
+    m --> c
+    note right
+        Cho phép sử dụng dịch vụ
+    end note
+else #Orange failure case 1.1: Khách hàng đã chấp thuận, điều khoản bị thay đổi
+    kc --> m
+    note right
+        - Trả đối tượng generalResponse
+        + generalResponse.code = <b>-1</b>
+        + generalResponse.errorCode = <font color=red><b>3106
+        + generalResponse.value
+        + generalResponse.message = Khách hàng đã chấp thuận, điều khoản bị thay đổi
+    end note
+    m --> c
+    note right
+        - Hiển thị thông báo điều khoản thay đổi, khách có muốn chấp thuận lại?
+        - Thông tin api trả về đã chứa thông tin chi tiết của điều khoản
+    end note
+else #Orange failure case 1.2: Khách hàng chưa chấp thuận điều khoản
+    kc --> m
+    note right
+        - Trả đối tượng generalResponse
+        + generalResponse.code = <b>-1</b>
+        + generalResponse.errorCode = <font color=red><b>3107
+        + generalResponse.value
+        + generalResponse.message = Khách hàng chưa chấp thuận điều khoản
+    end note
+    m --> c
+    note right
+        - Hiển thị thông tin điều khoản
+        - Thông tin api trả về đã chứa thông tin chi tiết của điều khoản
+        - <font color=red>Không cho sử dụng dịch vụ
+    end note
+else #Orange failure case 1.3: Điều khoản chưa được phê duyệt
+    kc --> m
+    note right
+        - Trả đối tượng generalResponse
+        + generalResponse.code = <b>-1</b>
+        + generalResponse.errorCode = <font color=red><b>3108
+        + generalResponse.message = Điều khoản chưa được phê duyệt
+    end note
+    m --> c
+    note right
+        - Điều khoản chưa được phê duyệt
+        - <font color=red>Không cho sử dụng dịch vụ
+    end note
+else #Red exception case 1.1
+    kc --> m
+    note right
+        - Trả đối tượng generalResponse
+        + generalResponse.code = <b>-1</b>
+        + generalResponse.errorCode = <font color=red><b>9000
+        + generalResponse.message = ex.message
+    end note
+    m --> c
+    note right
+        - Thông báo hệ thống gián đoạn, vui lòng thử lại sau
+        - <font color=red>Không cho sử dụng dịch vụ
+    end note
+end
+
+@enduml

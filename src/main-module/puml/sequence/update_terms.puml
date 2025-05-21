@@ -1,0 +1,81 @@
+@startuml update_terms
+
+skinparam sequenceMessageAlign right
+skinparam maxMessageSize 255
+skinparam noteTextAlignment left
+
+title
+Cập nhật nội dung điều khoản
+end title
+
+autonumber "<b>[000]"
+
+participant web
+participant kbsv_terms as kt
+
+web -> kt
+kt -> kt
+note right
+    - Kiểm tra dữ liệu
+end note
+alt #LightBlue successful case 1.1
+    kt -> kt
+    note right
+        - Cập nhật <b>terms
+        + set <b>terms.version=terms.version+1
+        + set <b>terms.state=EDITING
+        - Thêm record vào <b>TermsHist</b> (DB xử lý, lấy dữ liệu cũ của <b>terms</b>)
+    end note
+    alt successful case 2.1
+        kt --> web
+        note right
+            - Trả đối tượng generalResponse
+            + generalResponse.code = <b>0</b>
+        end note
+    else #Red exception case 2.1
+        kt -> kt
+        note right
+            - rollback all
+        end note
+        kt --> web
+        note right
+            - Trả đối tượng generalResponse
+            + generalResponse.code = <b>-1</b>
+            + generalResponse.errorCode = <font color=red><b>9000
+            + generalResponse.message = ex.message
+        end note
+    end
+else #Orange failure case 1.1: Điều khoản đang không ở trạng thái điều chỉnh
+    kt --> web
+    note right
+        - Điều kiện: 
+        + <b>terms.maintaining = false
+
+        - Trả đối tượng generalResponse
+        + generalResponse.code = <b>-1</b>
+        + generalResponse.errorCode = <font color=red><b>3102
+        + generalResponse.message = Điều khoản đang không ở trạng thái điều chỉnh
+    end note
+else #Orange failure case 1.1: Điều khoản đang do user khác sửa
+    kt --> web
+    note right
+        - Điều kiện:
+        + <b>terms.maintaining = true
+        + <b>terms.assignee != user hiện tại
+
+        - Trả đối tượng generalResponse
+        + generalResponse.code = <b>-1</b>
+        + generalResponse.errorCode = <font color=red><b>3101
+        + generalResponse.message = Điều khoản đang do user khác sửa
+    end note
+else #Red exception case 1.1
+    kt --> web
+    note right
+        - Trả đối tượng generalResponse
+        + generalResponse.code = <b>-1</b>
+        + generalResponse.errorCode = <font color=red><b>9000
+        + generalResponse.message = ex.message
+    end note
+end
+
+@enduml
